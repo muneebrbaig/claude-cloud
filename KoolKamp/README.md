@@ -1,9 +1,9 @@
-# KoolKamp brand assets
+# KoolKamp assets
 
 Generated from the supplied logo and brand sheet (`source/`). The K symbol, wordmark and tagline
 were vectorised, so the SVGs scale to any size. All PNGs are rendered from those SVGs.
 
-Brand colours: gradient `#6abfde` → `#7840d2` (top-right → bottom-left), wordmark ink `#3c4246`, C1 border navy `#223b73`.
+Brand colors: gradient `#6abfde` → `#7840d2` (top-right → bottom-left), wordmark ink `#3c4246`, C1 border navy `#223b73`.
 
 ## Where to use what
 
@@ -12,7 +12,7 @@ Brand colours: gradient `#6abfde` → `#7840d2` (top-right → bottom-left), wor
 | Website header (light bg) | `svg/koolkamp-logo-horizontal.svg` (or `-notagline` for tight navbars) |
 | Website header (dark bg) | `svg/koolkamp-logo-horizontal-dark.svg` |
 | Splash screen / login / hero | `svg/koolkamp-logo-primary.svg` (`-dark` for dark bg) |
-| Symbol only (avatar, loader, watermark) | `svg/koolkamp-mark.svg`, `-black`, `-white` for one-colour print/UI |
+| Symbol only (avatar, loader, watermark) | `svg/koolkamp-mark.svg`, `-black`, `-white` for one-color print/UI |
 | Browser favicon | `favicon/` (see `favicon/head-snippet.html`) |
 | PWA / web app manifest | `favicon/site.webmanifest`, `android-chrome-*`, `maskable-512x512.png` |
 | iOS app icon | `mobile/ios/AppIcon-c2-1024.png` (or `-inverted`), opaque and square: iOS applies the corner mask |
