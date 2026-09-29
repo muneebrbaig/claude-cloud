@@ -1,6 +1,6 @@
 """Builds the KoolHub asset set from source/original-logo.png.
 Usage: python3 source/build_assets.py   (needs pillow numpy scipy opencv-python-headless playwright+chromium)
-Mark = background-removed 4x raster cutout (embedded in SVGs). Wordmark + tagline = traced vector paths."""
+Mark = background-removed 4x raster cutout (embedded in SVGs). Wordmark = Poppins Bold, tagline = Poppins Regular, both converted to vector outlines (needs fonttools)."""
 import base64, io, os, json, shutil
 import numpy as np, cv2
 from PIL import Image
@@ -36,26 +36,22 @@ def b64(img):
 def silhouette(rgb_):
     s = Image.new('RGBA', mark.size, rgb_ + (0,)); s.putalpha(mark.getchannel('A')); return s
 
-# ---------- trace text ----------
-def trace(y0, y1, x0=0, x1=W, up=8):
-    crop = np.array(SRC.crop((x0, y0, x1, y1)).convert('L'), np.float32)
-    big = cv2.resize(crop, None, fx=up, fy=up, interpolation=cv2.INTER_CUBIC)
-    big = cv2.GaussianBlur(big, (0, 0), up * .25)
-    bw = (big < 135).astype(np.uint8) * 255
-    cs, hier = cv2.findContours(bw, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-    d = []
-    for c in cs:
-        if len(c) < 12: continue
-        ap = cv2.approxPolyDP(c, up * .12, True)[:, 0, :] / up
-        d.append('M' + ' L'.join(f'{x + x0:.2f} {y + y0:.2f}' for x, y in ap) + 'Z')
-    return ' '.join(d)
-def bounds(y0, y1):
-    g = np.array(SRC.convert('L'))[y0:y1] < 135
-    xs = np.where(g.any(0))[0]; ys = np.where(g.any(1))[0]
-    return xs.min(), xs.max() + 1, ys.min() + y0, ys.max() + 1 + y0
-wb = bounds(455, 552); tb = bounds(565, 601)
-word_d = trace(wb[2] - 3, wb[3] + 3, wb[0] - 3, wb[1] + 3)
-tag_d = trace(tb[2] - 3, tb[3] + 3, tb[0] - 3, tb[1] + 3)
+# ---------- text outlines (Poppins Bold wordmark, Poppins Regular tagline) ----------
+from fontTools.ttLib import TTFont
+from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
+from fontTools.pens.boundsPen import BoundsPen
+def outline(weight, text, size=100, tracking=0):
+    f = TTFont(f'source/fonts/poppins-latin-{weight}-normal.woff'); gs = f.getGlyphSet(); cm = f.getBestCmap(); s = size / f['head'].unitsPerEm
+    x = 0; pen = SVGPathPen(gs); bp = BoundsPen(gs)
+    for ch in text:
+        g = cm[ord(ch)]
+        for p_ in (pen, bp): gs[g].draw(TransformPen(p_, (s, 0, 0, -s, x, 0)))
+        x += gs[g].width * s + tracking
+    x0, y0, x1, y1 = bp.bounds  # y is flipped (SVG space)
+    return pen.getCommands(), (x0, x1, y0, y1)
+word_d, wb = outline(700, 'KoolHub')
+tag_d, tb = outline(400, 'Integrated Multi-Sector Management Platform')
 INK = '#3f4152'; INK_DARK = '#f2f4fa'; TAG = '#4b4d5e'; TAG_DARK = '#c9cddc'
 # text geometry in source px (word 'KoolHub' and tagline)
 ww, wh = wb[1] - wb[0], wb[3] - wb[2]; tw, th = tb[1] - tb[0], tb[3] - tb[2]
